@@ -1,0 +1,47 @@
+package com.example.final_fred_display.viewmodel
+
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
+import com.example.final_fred_display.model.FREDApiService
+import com.example.final_fred_display.model.RetrofitInstance
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
+
+import javax.inject.Inject
+import javax.inject.Singleton
+
+
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+
+) : ViewModel(){
+
+
+    private val _uiStateFlow : MutableStateFlow<uiState> = MutableStateFlow(uiState())
+    val uiStateFlow = _uiStateFlow.asStateFlow()
+    data class uiState(val seriesId : String ="",
+                       val startDate : String ="",
+                       val endDate : String ="",
+
+    )
+    fun onSeriesIdChanged(id : String)
+    {
+        _uiStateFlow.update { it.copy(seriesId = id)}
+    }
+    fun onStartDateChanged(start : String)
+    {
+        _uiStateFlow.update { it.copy(startDate = start)}
+    }
+    fun onEndDateChanged(end : String)
+    {
+        _uiStateFlow.update { it.copy(endDate = end)}
+    }
+
+
+
+}
