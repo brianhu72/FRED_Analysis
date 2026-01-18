@@ -1,4 +1,4 @@
-package com.example.final_fred_display
+package com.example.fred_analysis
 
 import org.junit.Test
 

@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.final_fred_display"
+    namespace = "com.example.fred_analysis"
     compileSdk = 36
 
     defaultConfig {
@@ -47,7 +47,6 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48")
     implementation(libs.androidx.benchmark.common)
     implementation(libs.androidx.media3.common.ktx)
-    //implementation(libs.androidx.navigation.compose.jvmstubs)
     kapt("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
@@ -76,5 +75,6 @@ dependencies {
 // gson
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("io.github.ehsannarmani:compose-charts:0.0.13")
+    implementation("androidx.compose.material:material-icons-extended")
 
 }

@@ -1,4 +1,4 @@
-package com.example.final_fred_display.ui.theme
+package com.example.fred_analysis.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

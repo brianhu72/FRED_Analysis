@@ -1,4 +1,4 @@
-package com.example.final_fred_display.model
+package com.example.fred_analysis.model
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

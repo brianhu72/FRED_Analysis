@@ -1,4 +1,4 @@
-package com.example.final_fred_display
+package com.example.fred_analysis
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

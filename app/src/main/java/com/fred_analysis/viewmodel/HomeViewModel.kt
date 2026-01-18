@@ -1,19 +1,12 @@
-package com.example.final_fred_display.viewmodel
+package com.example.fred_analysis.viewmodel
 
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
-import com.example.final_fred_display.model.FREDApiService
-import com.example.final_fred_display.model.RetrofitInstance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
 
 import javax.inject.Inject
-import javax.inject.Singleton
 
 
 @HiltViewModel

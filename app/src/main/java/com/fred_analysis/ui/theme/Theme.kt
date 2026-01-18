@@ -1,4 +1,4 @@
-package com.example.final_fred_display.ui.theme
+package com.example.fred_analysis.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
