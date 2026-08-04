@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
@@ -31,14 +33,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fred_analysis.viewmodel.GraphUiState
 import com.example.fred_analysis.viewmodel.SeriesData
+import com.example.fred_analysis.viewmodel.SeriesInsight
 import com.example.fred_analysis.viewmodel.GraphViewModel
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.models.HorizontalIndicatorProperties
+import ir.ehsannarmani.compose_charts.models.LabelHelperProperties
 
 @Composable
 fun GraphScreen(onBack: () -> Unit, graphViewModel: GraphViewModel = hiltViewModel()) {
@@ -50,7 +56,7 @@ fun GraphScreen(onBack: () -> Unit, graphViewModel: GraphViewModel = hiltViewMod
         ) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
             Text("Series detail", modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-            IconButton(onClick = graphViewModel::loadData) { Icon(Icons.Default.Refresh, "Refresh") }
+            IconButton(onClick = graphViewModel::refresh) { Icon(Icons.Default.Refresh, "Refresh") }
         }
         when {
             state.isLoading -> LoadingContent()
@@ -63,15 +69,23 @@ fun GraphScreen(onBack: () -> Unit, graphViewModel: GraphViewModel = hiltViewMod
 
 @Composable
 private fun ChartContent(state: GraphUiState) {
-    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Text(if (state.series.size == 1) state.series.first().id else "Series comparison", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text(state.dateRange, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+        InsightsCard(state.series.mapNotNull { it.insight })
         Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
             Column(Modifier.padding(16.dp)) {
                 Text(if (state.series.size == 1) "History" else "Comparison", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(12.dp))
                 LineChart(
                     modifier = Modifier.fillMaxWidth().height(270.dp),
+                    indicatorProperties = HorizontalIndicatorProperties(
+                        textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                        padding = 16.dp
+                    ),
+                    labelHelperProperties = LabelHelperProperties(
+                        textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                    ),
                     data = state.series.mapIndexed { index, series ->
                         Line(
                             label = series.id,
@@ -85,6 +99,22 @@ private fun ChartContent(state: GraphUiState) {
         Text("Latest observations", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         state.series.forEachIndexed { index, series -> SeriesSummary(series, chartColors[index % chartColors.size]) }
         Text("Data is provided by FRED. Series may use different units; compare the direction of movement when units differ.", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun InsightsCard(insights: List<SeriesInsight>) {
+    if (insights.isEmpty()) return
+    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Insights", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            insights.forEach { insight ->
+                Text(insight.headline, fontWeight = FontWeight.Medium)
+                insight.details.forEach { detail ->
+                    Text(detail, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+            }
+        }
     }
 }
 

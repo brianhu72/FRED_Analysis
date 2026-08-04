@@ -27,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.fred_analysis.ui.screens.GraphScreen
 import com.example.fred_analysis.ui.screens.HomeScreen
+import java.time.LocalDate
 
 private const val HOME_ROUTE = "home"
 private const val GRAPH_ROUTE = "graph/{seriesIds}/{startDate}/{endDate}"
@@ -59,17 +60,22 @@ fun NavWrapper() {
         bottomBar = {
             NavigationBar(containerColor = navigationColor) {
                 screens.forEach { screen ->
-                    val selected = backStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true
+                    val currentRoute = backStackEntry?.destination?.route.orEmpty()
+                    val selected = if (screen.route == "graph") currentRoute.startsWith("graph")
+                    else backStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
                             if (screen.route == HOME_ROUTE) {
                                 navController.navigate(HOME_ROUTE) { popUpTo(HOME_ROUTE) { inclusive = false } }
+                            } else if (!selected) {
+                                navController.navigate("graph/GDP/2019-01-01/${LocalDate.now()}") {
+                                    launchSingleTop = true
+                                }
                             }
                         },
                         icon = { Icon(screen.imageVector, contentDescription = null) },
-                        label = { Text(screen.label) },
-                        enabled = screen.route == HOME_ROUTE || selected
+                        label = { Text(screen.label) }
                     )
                 }
             }
