@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // hilt
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
 }
@@ -43,18 +42,17 @@ android {
 }
 
 dependencies {
-    // hilt
     implementation("com.google.dagger:hilt-android:2.48")
     implementation(libs.androidx.benchmark.common)
     implementation(libs.androidx.media3.common.ktx)
     kapt("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
-    // navigation
     implementation("androidx.navigation:navigation-compose:2.7.3")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.2")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -68,11 +66,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    // okhttp3
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
-// retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-// gson
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("io.github.ehsannarmani:compose-charts:0.0.13")
     implementation("androidx.compose.material:material-icons-extended")
