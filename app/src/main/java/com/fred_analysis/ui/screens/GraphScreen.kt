@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fred_analysis.viewmodel.GraphUiState
@@ -45,6 +46,7 @@ import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.Line
 import ir.ehsannarmani.compose_charts.models.HorizontalIndicatorProperties
 import ir.ehsannarmani.compose_charts.models.LabelHelperProperties
+import ir.ehsannarmani.compose_charts.models.LabelProperties
 
 @Composable
 fun GraphScreen(onBack: () -> Unit, graphViewModel: GraphViewModel = hiltViewModel()) {
@@ -82,6 +84,11 @@ private fun ChartContent(state: GraphUiState) {
                     indicatorProperties = HorizontalIndicatorProperties(
                         textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         padding = 16.dp
+                    ),
+                    labelProperties = LabelProperties(
+                        enabled = true,
+                        labels = buildDateAxisLabels(state.series),
+                        textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                     ),
                     labelHelperProperties = LabelHelperProperties(
                         textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface)
@@ -177,3 +184,12 @@ private fun EmptyContent() = Column(Modifier.fillMaxSize().padding(28.dp), horiz
 
 private val chartColors = listOf(Color(0xFF155E75), Color(0xFF7C3AED), Color(0xFFB45309), Color(0xFFBE123C))
 private fun formatValue(value: Double): String = "%,.2f".format(value)
+
+// Horizontal-axis labels: one tick per year (January), displayed as just the year.
+private fun buildDateAxisLabels(series: List<SeriesData>): List<String> {
+    val dates = series.maxByOrNull { it.observations.size }?.observations.orEmpty()
+    if (dates.isEmpty()) return emptyList()
+    val startYear = dates.first().date.take(4).toIntOrNull() ?: return emptyList()
+    val endYear = dates.last().date.take(4).toIntOrNull() ?: startYear
+    return (startYear..endYear).map { it.toString() }
+}

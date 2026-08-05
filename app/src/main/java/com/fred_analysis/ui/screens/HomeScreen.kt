@@ -169,7 +169,8 @@ private fun SeriesForm(
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text(if (comparisonSeries.isEmpty()) "View chart" else "Compare ${comparisonSeries.size + 1} series", fontWeight = FontWeight.SemiBold)
+                val chartCount = (comparisonSeries + seriesId).filter { it.isNotBlank() }.distinct().size
+                Text(if (chartCount <= 1) "View chart" else "Compare $chartCount series", fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(8.dp))
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
             }
