@@ -3,6 +3,7 @@ package com.example.fred_analysis.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.fred_analysis.BuildConfig
 import com.example.fred_analysis.model.Observation
 import com.example.fred_analysis.model.FredObservationCache
 import com.example.fred_analysis.model.RetrofitInstance
@@ -50,7 +51,12 @@ class GraphViewModel @Inject constructor(
         if (cachedObservations != null) {
             return SeriesData(id, cachedObservations, buildInsight(id, cachedObservations.mapNotNull { it.value.toDoubleOrNull() }))
         }
-        val response = retrofitInstance.fredApiService.getObservations(id, startDate = startDate, endDate = endDate)
+        val response = retrofitInstance.fredApiService.getObservations(
+            seriesId = id,
+            apiKey = BuildConfig.FRED_API_KEY,
+            startDate = startDate,
+            endDate = endDate
+        )
         if (!response.isSuccessful) return SeriesData(id)
         val observations = response.body()?.observations.orEmpty().filter { it.value.toDoubleOrNull() != null }
         observationCache.put(cacheKey, observations)

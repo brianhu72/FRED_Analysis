@@ -9,7 +9,7 @@ interface FREDApiService {
     @GET("fred/series/observations")
     suspend fun getObservations(
         @Query("series_id") seriesId: String,
-        @Query("api_key") apiKey: String = "588b07a6e209bb7121e8e8c874f8a680",
+        @Query("api_key") apiKey: String,
         @Query("observation_start") startDate: String,
         @Query("observation_end") endDate: String,
         @Query("file_type") fileType: String = "json"
