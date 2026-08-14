@@ -8,11 +8,13 @@ plugins {
     id("kotlin-kapt")
 }
 
-// Read the FRED API key from local.properties (git-ignored) so it never lands in source control.
-val fredApiKey: String = Properties().apply {
+// Read API keys from local.properties (git-ignored) so they never land in source control.
+val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
-}.getProperty("fred.api.key") ?: ""
+}
+val fredApiKey: String = localProps.getProperty("fred.api.key") ?: ""
+val anthropicApiKey: String = localProps.getProperty("anthropic.api.key") ?: ""
 
 android {
     namespace = "com.example.fred_analysis"
@@ -28,6 +30,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "FRED_API_KEY", "\"$fredApiKey\"")
+        buildConfigField("String", "ANTHROPIC_API_KEY", "\"$anthropicApiKey\"")
     }
 
     buildTypes {

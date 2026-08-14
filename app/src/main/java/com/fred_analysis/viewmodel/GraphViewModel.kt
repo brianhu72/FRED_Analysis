@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fred_analysis.BuildConfig
+import com.example.fred_analysis.model.AnthropicMessage
+import com.example.fred_analysis.model.AnthropicRequest
 import com.example.fred_analysis.model.Observation
 import com.example.fred_analysis.model.FredObservationCache
 import com.example.fred_analysis.model.RetrofitInstance
@@ -32,18 +34,70 @@ class GraphViewModel @Inject constructor(
     init { loadData() }
 
     fun loadData(forceRefresh: Boolean = false) = viewModelScope.launch {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, errorMessage = null, aiSummary = null, aiError = false) }
         try {
             val results = seriesIds.map { id -> async { loadSeries(id, forceRefresh) } }.awaitAll()
             val successful = results.filter { it.observations.isNotEmpty() }
             if (successful.isEmpty()) _uiState.update { it.copy(isLoading = false, errorMessage = "No observations were returned for the selected series.") }
-            else _uiState.update { it.copy(isLoading = false, series = successful) }
+            else {
+                _uiState.update { it.copy(isLoading = false, series = successful) }
+                generateAiSummary(successful)
+            }
         } catch (_: Exception) {
             _uiState.update { it.copy(isLoading = false, errorMessage = "Unable to reach FRED. Check your connection and try again.") }
         }
     }
 
     fun refresh() = loadData(forceRefresh = true)
+
+    private fun generateAiSummary(series: List<SeriesData>) = viewModelScope.launch {
+        if (BuildConfig.ANTHROPIC_API_KEY.isBlank()) return@launch
+        _uiState.update { it.copy(aiLoading = true, aiError = false) }
+        try {
+            val prompt = buildAiPrompt(series)
+            val response = retrofitInstance.anthropicApiService.createMessage(
+                AnthropicRequest(
+                    model = "claude-opus-5",
+                    maxTokens = 400,
+                    system = "You are an economics assistant embedded in a data app. " +
+                        "Given summary statistics for one or more FRED economic series, write a concise, " +
+                        "plain-language read of what the numbers show in 2-3 sentences. When multiple series " +
+                        "are present, note how their movements relate. Do not give financial or investment " +
+                        "advice, do not use markdown, and do not repeat the raw numbers verbatim.",
+                    messages = listOf(AnthropicMessage(role = "user", content = prompt))
+                )
+            )
+            val text = response.body()?.content
+                ?.firstOrNull { it.type == "text" }
+                ?.text
+                ?.trim()
+            if (response.isSuccessful && !text.isNullOrEmpty()) {
+                _uiState.update { it.copy(aiLoading = false, aiSummary = text) }
+            } else {
+                _uiState.update { it.copy(aiLoading = false, aiError = true) }
+            }
+        } catch (_: Exception) {
+            _uiState.update { it.copy(aiLoading = false, aiError = true) }
+        }
+    }
+
+    private fun buildAiPrompt(series: List<SeriesData>): String {
+        val header = "Date range: $startDate to $endDate.\n\n"
+        val body = series.joinToString("\n\n") { s ->
+            val values = s.observations.mapNotNull { it.value.toDoubleOrNull() }
+            val first = values.firstOrNull()
+            val latest = values.lastOrNull()
+            val changePercent = if (first != null && latest != null && first != 0.0)
+                (latest - first) / kotlin.math.abs(first) * 100 else null
+            buildString {
+                append("Series ${s.id}: ${values.size} observations. ")
+                if (first != null && latest != null) append("Start ${formatValue(first)}, latest ${formatValue(latest)}. ")
+                if (changePercent != null) append("Change ${formatPercent(changePercent)} over the period. ")
+                if (values.isNotEmpty()) append("Range ${formatValue(values.min())} to ${formatValue(values.max())}, average ${formatValue(values.average())}.")
+            }
+        }
+        return header + body
+    }
 
     private suspend fun loadSeries(id: String, forceRefresh: Boolean): SeriesData {
         val cacheKey = FredObservationCache.CacheKey(id, startDate, endDate)
@@ -96,7 +150,10 @@ data class GraphUiState(
     val dateRange: String,
     val series: List<SeriesData> = emptyList(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val aiLoading: Boolean = false,
+    val aiSummary: String? = null,
+    val aiError: Boolean = false
 )
 
 data class SeriesData(
