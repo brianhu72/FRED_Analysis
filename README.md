@@ -1,6 +1,6 @@
 # FRED Analysis
 
-A native Android application to explore US economic data. FRED Analysis pulls time series from the Federal Reserve Bank of St. Louis (FRED) API, lets the user pick any series and date range, and renders the results as an interactive line chart with an auto-generated written summary. It's built independently in Kotlin and Jetpack Compose to leverage production Android patterns: a Hilt-injected MVVM architecture, unidirectional `StateFlow` UI state, coroutine-based concurrency, and caching.
+A native Android application to explore US economic data. FRED Analysis pulls time series from the Federal Reserve Bank of St. Louis (FRED) API, lets the user pick any series and date range, and renders the results as an interactive line chart paired with two written summaries: a deterministic statistical readout and an AI-generated narrative from Anthropic's Claude API. It's built independently in Kotlin and Jetpack Compose to leverage production Android patterns: a Hilt-injected MVVM architecture, unidirectional `StateFlow` UI state, coroutine-based concurrency, and caching.
 
 ## Screenshots
 
@@ -15,13 +15,14 @@ A native Android application to explore US economic data. FRED Analysis pulls ti
 The app is organized around two screens connected by a bottom navigation bar:
 
 - **Explore:** enter a FRED series ID (for example `GDP`, `GNPCA`, `CPIAUCSL`) and a start/end date, add up to four series to compare on one chart, and save series as favorites for quick reuse.
-- **Chart:** fetches every selected series, plots them together as a line chart, and shows a written insight per series (net change, period average, range, and recent direction).
+- **Chart:** fetches every selected series, plots them together as a line chart, shows a written insight per series (net change, period average, range, and recent direction), and generates an AI response that reads the data.
 
 ## Features
 
 - **Multi-series comparison:** overlay up to four FRED series on a single chart to compare trends
 - **Concurrent fetching:** all selected series load in parallel with coroutines (`async`/`awaitAll`) rather than sequentially
 - **Auto-generated insights:** each series is summarized in plain language (percent change, average, min/max range, recent movement)
+- **AI insights:** the series statistics are sent to Anthropic's Claude API, which returns a read of what the data shows; the feature is optional and the summary remains when no API key is configured or the request fails
 - **Persistent favorites:** starred series are saved across launches via `SharedPreferences`
 - **In-memory LRU cache:** a bounded, access-ordered cache avoids re-fetching identical series/date-range requests, with a manual pull-to-refresh that bypasses it
 - **Form validation:** series ID and `YYYY-MM-DD` date checks with clear inline errors before a request is made
@@ -38,6 +39,7 @@ The app is organized around two screens connected by a bottom navigation bar:
 | Dependency injection | Hilt (Dagger) |
 | Navigation | Navigation Compose |
 | Networking | Retrofit, OkHttp, Gson |
+| AI | Anthropic Claude API (Messages API) |
 | Concurrency | Kotlin Coroutines |
 | Charts | `compose-charts` (ehsannarmani) |
 | Min / Target SDK | 28 / 36 |
